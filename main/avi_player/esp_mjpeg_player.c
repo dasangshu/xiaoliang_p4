@@ -197,12 +197,12 @@ static void mjpeg_player_task(void *arg) {
         read_pos += advance;
         media_src_storage_seek(&player->file, read_pos);
 
-        // 帧率控制 - 限制到25fps
+        // 帧率控制 - 限制到8fps
         int64_t current_time = esp_timer_get_time();
         if (last_frame_time > 0) {
             int64_t elapsed = current_time - last_frame_time;
-            if (elapsed < 40000) { // 40ms = 25fps
-                vTaskDelay(pdMS_TO_TICKS((40000 - elapsed) / 1000));
+            if (elapsed < 125000) { // 125ms = 8fps
+                vTaskDelay(pdMS_TO_TICKS((125000 - elapsed) / 1000));
             }
         }
         last_frame_time = current_time;
