@@ -389,8 +389,8 @@ void Application::Start() {
     mjpeg_player_port_config_t config = {
     .buffer_size = 64 * 1024,
     .core_id = 1,
-    .use_psram = false,
-    .task_priority = 5  // 设置一个中等的任务优先级
+    .use_psram = true,  // 使用PSRAM减少内存压力
+    .task_priority = 3  // 降低优先级，让音频优先
     };
     mjpeg_player_port_init(&config);
     
@@ -424,6 +424,16 @@ void Application::Start() {
 
     // Update the status bar immediately to show the network state
     display->UpdateStatusBar(true);
+
+    // Initialize posture detection service if camera is available
+    ESP_LOGI(TAG, "初始化坐姿检测服务...");
+    if (InitializePostureDetection()) {
+        // 延迟启动坐姿检测，等待系统完全初始化
+        Schedule([this]() {
+            StartPostureDetection();
+        });
+        ESP_LOGI(TAG, "坐姿检测将在idle状态下运行，对话时自动暂停");
+    }
 
     // Check for new firmware version or get the MQTT broker address
     Ota ota;
@@ -654,6 +664,9 @@ void Application::OnWakeWordDetected() {
     }
 
     if (device_state_ == kDeviceStateIdle) {
+        // 播放唤醒音效
+        audio_service_.PlaySound(Lang::Sounds::P3_ZAINE);
+        
         audio_service_.EncodeWakeWord();
 
         if (!protocol_->IsAudioChannelOpened()) {
@@ -676,8 +689,8 @@ void Application::OnWakeWordDetected() {
         SetListeningMode(aec_mode_ == kAecOff ? kListeningModeAutoStop : kListeningModeRealtime);
 #else
         SetListeningMode(aec_mode_ == kAecOff ? kListeningModeAutoStop : kListeningModeRealtime);
-        // Play the pop up sound to indicate the wake word is detected
-        audio_service_.PlaySound(Lang::Sounds::P3_POPUP);
+        // Play the pop up sound to indicate the wake word is detected (已被zaine音效替换)
+        // audio_service_.PlaySound(Lang::Sounds::P3_POPUP);
 #endif
     } else if (device_state_ == kDeviceStateSpeaking) {
         AbortSpeaking(kAbortReasonWakeWordDetected);
@@ -688,6 +701,10 @@ void Application::OnWakeWordDetected() {
 
 void Application::AbortSpeaking(AbortReason reason) {
     ESP_LOGI(TAG, "Abort speaking");
+    
+    // 播放打断音效
+    audio_service_.PlaySound(Lang::Sounds::P3_ZAINE);
+    
     aborted_ = true;
     protocol_->SendAbortSpeaking(reason);
 }
@@ -709,6 +726,9 @@ void Application::SetDeviceState(DeviceState state) {
 
     // Send the state change event
     DeviceStateEventManager::GetInstance().PostStateChangeEvent(previous_state, state);
+
+    // 智能坐姿检测控制：只在idle状态下运行，对话时暂停
+    ManagePostureDetectionByState(previous_state, state);
 
     auto& board = Board::GetInstance();
     auto display = board.GetDisplay();
@@ -748,6 +768,9 @@ void Application::SetDeviceState(DeviceState state) {
         case kDeviceStateSpeaking:
             display->SetStatus(Lang::Strings::SPEAKING);
             display->SetEmotion("talk.mjpeg");
+
+            // 优化音频播放体验：降低视频帧率，提高音频优先级
+            mjpeg_player_port_set_priority(2);  // 进一步降低视频优先级
 
             if (listening_mode_ != kListeningModeRealtime) {
                 audio_service_.EnableVoiceProcessing(false);
@@ -846,4 +869,158 @@ void Application::SetAecMode(AecMode mode) {
 
 void Application::PlaySound(const std::string_view& sound) {
     audio_service_.PlaySound(sound);
+}
+
+// 坐姿检测相关方法实现
+bool Application::InitializePostureDetection() {
+    auto& board = Board::GetInstance();
+    auto camera_raw = board.GetCamera();
+    auto display_raw = board.GetDisplay();
+    
+    if (!camera_raw || !display_raw) {
+        ESP_LOGW(TAG, "摄像头或显示器不可用，跳过坐姿检测初始化");
+        ESP_LOGI(TAG, "坐姿检测功能暂时禁用，系统将继续正常运行");
+        return true; // 返回true以避免影响应用启动
+    }
+    
+    // 将原始指针包装为shared_ptr，使用空删除器（因为对象由Board管理生命周期）
+    auto camera = std::shared_ptr<Camera>(camera_raw, [](Camera*){});
+    auto display = std::shared_ptr<Display>(display_raw, [](Display*){});
+    
+    auto& manager = PostureServiceManager::GetInstance();
+    if (!manager.InitializeService(camera, display)) {
+        ESP_LOGE(TAG, "坐姿检测服务初始化失败");
+        return false;
+    }
+    
+    // 设置检测结果回调
+    auto service = manager.GetService();
+    if (service) {
+        service->SetResultCallback([this](const PostureResult& result) {
+            // 可以在这里处理检测结果，例如发送到服务器或触发其他动作
+            ESP_LOGI(TAG, "坐姿检测结果: %s", result.status_text.c_str());
+        });
+        
+        // 设置默认配置
+        PostureServiceConfig config;
+        config.enable_detection = true;
+        config.enable_display_overlay = true;
+        config.enable_voice_alerts = true;
+        config.detection_interval_ms = 2000;  // 2秒检测一次
+        config.alert_interval_ms = 10000;     // 10秒提醒间隔
+        config.consecutive_bad_posture_count = 3;
+        service->SetConfig(config);
+    }
+    
+    ESP_LOGI(TAG, "坐姿检测服务初始化成功");
+    return true;
+}
+
+void Application::StartPostureDetection() {
+    auto& manager = PostureServiceManager::GetInstance();
+    auto service = manager.GetService();
+    if (!service) {
+        ESP_LOGW(TAG, "坐姿检测服务未初始化，无法启动");
+        return;
+    }
+    
+    if (!service->IsRunning()) {
+        if (service->Start()) {
+            ESP_LOGI(TAG, "坐姿检测服务已启动");
+            
+            // 显示启动通知
+            auto& board = Board::GetInstance();
+            auto display = board.GetDisplay();
+            if (display) {
+                display->ShowNotification("坐姿检测已启动", 2000);
+            }
+        } else {
+            ESP_LOGE(TAG, "坐姿检测服务启动失败");
+        }
+    }
+}
+
+void Application::StopPostureDetection() {
+    auto& manager = PostureServiceManager::GetInstance();
+    auto service = manager.GetService();
+    if (!service) {
+        ESP_LOGW(TAG, "坐姿检测服务未初始化，无法停止");
+        return;
+    }
+    
+    if (service->IsRunning()) {
+        service->Stop();
+        ESP_LOGI(TAG, "坐姿检测服务已停止");
+        
+        // 显示停止通知
+        auto& board = Board::GetInstance();
+        auto display = board.GetDisplay();
+        if (display) {
+            display->ShowNotification("坐姿检测已停止", 2000);
+        }
+    }
+}
+
+bool Application::IsPostureDetectionRunning() const {
+    auto& manager = PostureServiceManager::GetInstance();
+    auto service = manager.GetService();
+    return service ? service->IsRunning() : false;
+}
+
+PostureResult Application::GetCurrentPosture() const {
+    auto& manager = PostureServiceManager::GetInstance();
+    auto service = manager.GetService();
+    if (service) {
+        return service->GetLatestResult();
+    }
+    
+    PostureResult result;
+    result.posture_type = PostureType::UNKNOWN;
+    result.status_text = "服务未启动";
+    return result;
+}
+
+void Application::SetPostureDetectionConfig(const PostureServiceConfig& config) {
+    auto& manager = PostureServiceManager::GetInstance();
+    auto service = manager.GetService();
+    if (service) {
+        service->SetConfig(config);
+        ESP_LOGI(TAG, "坐姿检测配置已更新");
+    }
+}
+
+void Application::ManagePostureDetectionByState(DeviceState previous_state, DeviceState current_state) {
+    auto& manager = PostureServiceManager::GetInstance();
+    auto service = manager.GetService();
+    if (!service) {
+        return; // 坐姿检测服务未初始化
+    }
+    
+    // 检查是否需要启动坐姿检测（进入idle状态）
+    if (current_state == kDeviceStateIdle && previous_state != kDeviceStateIdle) {
+        if (!service->IsRunning()) {
+            ESP_LOGI(TAG, "设备进入idle状态，启动坐姿检测");
+            service->Start();
+        }
+    }
+    // 检查是否需要暂停坐姿检测（离开idle状态进入对话相关状态）
+    else if (previous_state == kDeviceStateIdle && 
+             (current_state == kDeviceStateConnecting || 
+              current_state == kDeviceStateListening || 
+              current_state == kDeviceStateSpeaking)) {
+        if (service->IsRunning()) {
+            ESP_LOGI(TAG, "设备进入对话状态(%d)，暂停坐姿检测", current_state);
+            service->Stop();
+        }
+    }
+    // 如果从非idle状态回到idle状态，重新启动坐姿检测
+    else if (current_state == kDeviceStateIdle && 
+             (previous_state == kDeviceStateConnecting || 
+              previous_state == kDeviceStateListening || 
+              previous_state == kDeviceStateSpeaking)) {
+        if (!service->IsRunning()) {
+            ESP_LOGI(TAG, "对话结束回到idle状态，重新启动坐姿检测");
+            service->Start();
+        }
+    }
 }

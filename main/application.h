@@ -16,6 +16,7 @@
 #include "ota.h"
 #include "audio_service.h"
 #include "device_state_event.h"
+#include "posture_service.h"
 
 #define MAIN_EVENT_SCHEDULE (1 << 0)
 #define MAIN_EVENT_SEND_AUDIO (1 << 1)
@@ -59,6 +60,15 @@ public:
     AecMode GetAecMode() const { return aec_mode_; }
     void PlaySound(const std::string_view& sound);
     AudioService& GetAudioService() { return audio_service_; }
+    
+    // 坐姿检测相关方法
+    bool InitializePostureDetection();
+    void StartPostureDetection();
+    void StopPostureDetection();
+    bool IsPostureDetectionRunning() const;
+    PostureResult GetCurrentPosture() const;
+    void SetPostureDetectionConfig(const PostureServiceConfig& config);
+    void ManagePostureDetectionByState(DeviceState previous_state, DeviceState current_state);
 
 private:
     Application();

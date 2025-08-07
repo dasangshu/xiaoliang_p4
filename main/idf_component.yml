@@ -39,6 +39,12 @@ dependencies:
   kevincoooool/esp_lcd_gc9d01: "^0.0.1"
   espressif/adc_battery_estimation: ^0.2.0
 
+  # ESP-DL Pose Detection Model (暂时注释，解决网络问题后启用)
+  # espressif/coco_pose:
+  #   version: "^0.1.0"
+  #   rules:
+  #   - if: target in [esp32p4]
+
   # SenseCAP Watcher Board
   wvirgil123/esp_jpeg_simd:
     version: 1.0.0
