@@ -97,7 +97,7 @@ bool CustomWakeWord::Initialize(AudioCodec* codec) {
         auto this_ = (CustomWakeWord*)arg;
         this_->AudioDetectionTask();
         vTaskDelete(NULL);
-    }, "audio_detection", 16384, this, 3, nullptr);
+    }, "audio_detection", 16384, this, 5, nullptr);
 
     return true;
 }

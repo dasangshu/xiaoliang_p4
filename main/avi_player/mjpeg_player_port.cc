@@ -354,7 +354,7 @@ esp_err_t mjpeg_player_port_init(mjpeg_player_port_config_t *config) {
         .frame_buffer_size = config->buffer_size ? config->buffer_size : 64 * 1024,  // 默认64KB
         .cache_buffer_size = 64 * 1024,
         .cache_in_psram = config->use_psram,
-        .task_priority = 5,
+        .task_priority = 2,
         .task_core = config->core_id,
         .on_frame_cb = frame_callback,
         .user_data = NULL

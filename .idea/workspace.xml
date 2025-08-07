@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand />
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="67ba6ed4-f58e-4a67-9006-7050affeec50" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/main/application.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/application.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/audio/audio_service.h" beforeDir="false" afterPath="$PROJECT_DIR$/main/audio/audio_service.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/audio/processors/afe_audio_processor.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/audio/processors/afe_audio_processor.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/audio/wake_words/afe_wake_word.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/audio/wake_words/afe_wake_word.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/audio/wake_words/custom_wake_word.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/audio/wake_words/custom_wake_word.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/avi_player/mjpeg_player_port.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/avi_player/mjpeg_player_port.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/display/desktop_mjpeg_manager.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/display/desktop_mjpeg_manager.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/display/lcd_display.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/display/lcd_display.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/display/lcd_display.h" beforeDir="false" afterPath="$PROJECT_DIR$/main/display/lcd_display.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/protocols/mqtt_protocol.cc" beforeDir="false" afterPath="$PROJECT_DIR$/main/protocols/mqtt_protocol.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/protocols/mqtt_protocol.h" beforeDir="false" afterPath="$PROJECT_DIR$/main/protocols/mqtt_protocol.h" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="30xRgj2u2SA10YhB8XKirEBP8dt" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="67ba6ed4-f58e-4a67-9006-7050affeec50" name="Default Changelist" comment="" />
+      <created>1754567351471</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1754567351471</updated>
+      <workItem from="1754567353653" duration="936000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="1">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="1" value="TOOL_WINDOW" />
+      </map>
+    </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="339" y="133" width="1001" height="419" key="DiffContextDialog" timestamp="1754568360385">
+      <screen x="0" y="25" width="1440" height="798" />
+    </state>
+    <state x="339" y="133" width="1001" height="419" key="DiffContextDialog/0.25.1440.798@0.25.1440.798" timestamp="1754568360385" />
+    <state x="691" y="258" key="VCS.ChangelistChooser" timestamp="1754567506776">
+      <screen x="0" y="25" width="1440" height="798" />
+    </state>
+    <state x="691" y="258" key="VCS.ChangelistChooser/0.25.1440.798@0.25.1440.798" timestamp="1754567506776" />
+  </component>
+</project>

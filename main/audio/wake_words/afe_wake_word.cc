@@ -74,7 +74,7 @@ bool AfeWakeWord::Initialize(AudioCodec* codec) {
         auto this_ = (AfeWakeWord*)arg;
         this_->AudioDetectionTask();
         vTaskDelete(NULL);
-    }, "audio_detection", 4096, this, 3, nullptr);
+    }, "audio_detection", 4096, this, 5, nullptr);
 
     return true;
 }

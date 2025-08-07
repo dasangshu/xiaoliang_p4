@@ -67,7 +67,7 @@ void AfeAudioProcessor::Initialize(AudioCodec* codec, int frame_duration_ms) {
         auto this_ = (AfeAudioProcessor*)arg;
         this_->AudioProcessorTask();
         vTaskDelete(NULL);
-    }, "audio_communication", 4096, this, 3, NULL);
+    }, "audio_communication", 4096, this, 5, NULL);
 }
 
 AfeAudioProcessor::~AfeAudioProcessor() {

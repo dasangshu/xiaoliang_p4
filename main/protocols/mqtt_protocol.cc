@@ -10,14 +10,8 @@
 
 #define TAG "MQTT"
 
-MqttProtocol::MqttProtocol() : audio_buffer_([](const std::unique_ptr<BufferedAudioPacket>& a, 
-                                                      const std::unique_ptr<BufferedAudioPacket>& b) {
-    return a->sequence > b->sequence; // 最小堆，序列号小的在前
-}) {
+MqttProtocol::MqttProtocol() {
     event_group_handle_ = xEventGroupCreate();
-    local_sequence_ = 0;
-    remote_sequence_ = 0;
-    last_audio_process_time_ = std::chrono::steady_clock::now();
 }
 
 MqttProtocol::~MqttProtocol() {
@@ -208,14 +202,14 @@ bool MqttProtocol::OpenAudioChannel() {
         }
         uint32_t timestamp = ntohl(*(uint32_t*)&data[8]);
         uint32_t sequence = ntohl(*(uint32_t*)&data[12]);
-        
-        // 跳过太旧的包
         if (sequence < remote_sequence_) {
             ESP_LOGW(TAG, "Received audio packet with old sequence: %lu, expected: %lu", sequence, remote_sequence_);
             return;
         }
-        
-        // 解密音频数据
+        if (sequence != remote_sequence_ + 1) {
+            ESP_LOGW(TAG, "Received audio packet with wrong sequence: %lu, expected: %lu", sequence, remote_sequence_ + 1);
+        }
+
         size_t decrypted_size = data.size() - aes_nonce_.size();
         size_t nc_off = 0;
         uint8_t stream_block[16] = {0};
@@ -231,29 +225,10 @@ bool MqttProtocol::OpenAudioChannel() {
             ESP_LOGE(TAG, "Failed to decrypt audio data, ret: %d", ret);
             return;
         }
-        
-        // 创建缓冲包
-        auto buffered_packet = std::make_unique<BufferedAudioPacket>();
-        buffered_packet->sequence = sequence;
-        buffered_packet->timestamp = timestamp;
-        buffered_packet->packet = std::move(packet);
-        buffered_packet->received_time = std::chrono::steady_clock::now();
-        
-        // 决定是否立即处理或缓冲
-        if (ShouldProcessPacketImmediately(sequence)) {
-            ProcessAudioPacket(std::move(buffered_packet));
-        } else {
-            // 加入缓冲区
-            if (audio_buffer_.size() >= MAX_AUDIO_BUFFER_SIZE) {
-                ESP_LOGW(TAG, "Audio buffer full, dropping oldest packet");
-                audio_buffer_.pop();
-            }
-            audio_buffer_.push(std::move(buffered_packet));
-            
-            // 检查是否有可以处理的包
-            FlushAudioBuffer();
+        if (on_incoming_audio_ != nullptr) {
+            on_incoming_audio_(std::move(packet));
         }
-        
+        remote_sequence_ = sequence;
         last_incoming_time_ = std::chrono::steady_clock::now();
     });
 
@@ -357,58 +332,4 @@ std::string MqttProtocol::DecodeHexString(const std::string& hex_string) {
 
 bool MqttProtocol::IsAudioChannelOpened() const {
     return udp_ != nullptr && !error_occurred_ && !IsTimeout();
-}
-
-void MqttProtocol::ProcessAudioPacket(std::unique_ptr<BufferedAudioPacket> buffered_packet) {
-    if (on_incoming_audio_ != nullptr) {
-        on_incoming_audio_(std::move(buffered_packet->packet));
-    }
-    remote_sequence_ = buffered_packet->sequence;
-    last_audio_process_time_ = std::chrono::steady_clock::now();
-}
-
-void MqttProtocol::FlushAudioBuffer() {
-    while (!audio_buffer_.empty()) {
-        auto& top_packet = audio_buffer_.top();
-        
-        // 检查是否是下一个期望的包
-        if (top_packet->sequence == remote_sequence_ + 1) {
-            ProcessAudioPacket(std::move(const_cast<std::unique_ptr<BufferedAudioPacket>&>(top_packet)));
-            audio_buffer_.pop();
-        } else {
-            // 检查包是否太旧，应该超时处理
-            auto now = std::chrono::steady_clock::now();
-            auto age = std::chrono::duration_cast<std::chrono::milliseconds>(now - top_packet->received_time).count();
-            
-            if (age > 100) { // 100ms超时
-                ESP_LOGW(TAG, "Audio packet timeout, processing out-of-order packet: %lu, expected: %lu", 
-                        top_packet->sequence, remote_sequence_ + 1);
-                ProcessAudioPacket(std::move(const_cast<std::unique_ptr<BufferedAudioPacket>&>(top_packet)));
-                audio_buffer_.pop();
-            } else {
-                break; // 等待更多包到达
-            }
-        }
-    }
-}
-
-bool MqttProtocol::ShouldProcessPacketImmediately(uint32_t sequence) {
-    // 如果是期望的下一个包，立即处理
-    if (sequence == remote_sequence_ + 1) {
-        return true;
-    }
-    
-    // 如果序列号间隔太大，立即处理以避免长时间等待
-    if (sequence > remote_sequence_ + MAX_SEQUENCE_GAP) {
-        ESP_LOGW(TAG, "Large sequence gap detected: %lu -> %lu, processing immediately", 
-                remote_sequence_, sequence);
-        return true;
-    }
-    
-    // 如果缓冲区为空且这是第一个包，立即处理
-    if (audio_buffer_.empty() && remote_sequence_ == 0) {
-        return true;
-    }
-    
-    return false;
 }

@@ -1038,67 +1038,67 @@ void LcdDisplay::SetEmotion(const char* emotion) {
 //         lv_obj_add_flag(preview_image_, LV_OBJ_FLAG_HIDDEN);
 //     }
 // #endif
-    const char *video_path = "neutral.avi"; // 默认视频
+    const char *video_path = "neutral.mjpeg"; // 默认视频
     printf("emotion: %s\n", emotion);
     if (strcmp(emotion, "happy") == 0)
     {
-        video_path = "happy.avi";
+        video_path = "happy.mjpeg";
     }
     else if (strcmp(emotion, "laughing") == 0)
     {
-        video_path = "laughing.avi";
+        video_path = "laughing.mjpeg";
     }
     else if (strcmp(emotion, "funny") == 0)
     {
-        video_path = "funny.avi";
+        video_path = "funny.mjpeg";
     }
     else if (strcmp(emotion, "sad") == 0)
     {
-        video_path = "sad.avi";
+        video_path = "sad.mjpeg";
     }
     else if (strcmp(emotion, "angry") == 0)
     {
-        video_path = "angry.avi";
+        video_path = "angry.mjpeg";
     }
     else if (strcmp(emotion, "crying") == 0)
     {
-        video_path = "crying.avi";
+        video_path = "crying.mjpeg";
     }
     else if (strcmp(emotion, "loving") == 0)
     {
-        video_path = "loving.avi";
+        video_path = "loving.mjpeg";
     }
     else if (strcmp(emotion, "embarrassed") == 0)
     {
-        video_path = "embarrassed.avi";
+        video_path = "embarrassed.mjpeg";
     }
     else if (strcmp(emotion, "surprised") == 0)
     {
-        video_path = "surprised.avi";
+        video_path = "surprised.mjpeg";
     }
     else if (strcmp(emotion, "thinking") == 0)
     {
-        video_path = "thinking.avi";
+        video_path = "thinking.mjpeg";
     }
     else if (strcmp(emotion, "sleepy") == 0)
     {
-        video_path = "sleepy.avi";
+        video_path = "sleepy.mjpeg";
     }
     else if (strcmp(emotion, "cool") == 0)
     {
-        video_path = "cool.avi";
+        video_path = "cool.mjpeg";
     }
     else if (strcmp(emotion, "confused") == 0)
     {
-        video_path = "confused.avi";
+        video_path = "confused.mjpeg";
     }
     else if (strcmp(emotion, "talk") == 0)
     {
-        video_path = "talk.avi";
+        video_path = "talk.mjpeg";
     }
     mjpeg_player_port_play_file(emotion);
     // ... 添加更多情绪对应的视频
-    //  video_path = "eye1.avi";
+    //  video_path = "eye1.mjpeg";
     // mjpeg_player_port_play_file_optimized(eye_videos[current_eye_index]);
 }
 void LcdDisplay::SetFaceImage(uint8_t *frame_buffer, int width, int height)

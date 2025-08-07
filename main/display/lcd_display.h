@@ -24,16 +24,16 @@ struct ThemeColors {
 };
 // 眼球视频数组定义
 static const char* eye_videos[] = {
-    "eye1.avi",
-    "eye2.avi",
-    "eye3.avi",
-    "eye4.avi",
-    "eye5.avi",
-    "eye6.avi",
-    "eye7.avi",
-    "eye8.avi",
-    "eye9.avi",
-    "eye10.avi",
+    "eye1.mjpeg",
+    "eye2.mjpeg",
+    "eye3.mjpeg",
+    "eye4.mjpeg",
+    "eye5.mjpeg",
+    "eye6.mjpeg",
+    "eye7.mjpeg",
+    "eye8.mjpeg",
+    "eye9.mjpeg",
+    "eye10.mjpeg",
 };
 
 class LcdDisplay : public Display {

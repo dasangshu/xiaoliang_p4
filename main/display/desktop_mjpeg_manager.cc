@@ -28,7 +28,7 @@ void DesktopMjpegManager::Initialize(lv_obj_t* parent, int width, int height) {
         .buffer_size = 0,  // 使用默认缓冲区大小
         .core_id = 1,      // 使用CPU核心1
         .use_psram = true, // 使用PSRAM
-        .task_priority = 5 // 中等优先级
+        .task_priority = 2 // 较低优先级
     };
     
     esp_err_t ret = mjpeg_player_port_init(&config);

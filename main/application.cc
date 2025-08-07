@@ -396,7 +396,7 @@ void Application::Start() {
     
     // 可选：测试新的优化播放器
     // ESP_LOGI(TAG, "Testing optimized AVI player...");
-    // avi_player_port_play_file_optimized("/sdcard/your_video.avi");
+    // avi_player_port_play_file_optimized("/sdcard/your_video.mjpeg");
     /* Setup the audio codec */
 
     /* Setup the audio service */
@@ -770,7 +770,7 @@ void Application::SetDeviceState(DeviceState state) {
             display->SetEmotion("talk.mjpeg");
 
             // 优化音频播放体验：降低视频帧率，提高音频优先级
-            mjpeg_player_port_set_priority(2);  // 进一步降低视频优先级
+            // mjpeg_player_port_set_priority(2);  // 进一步降低视频优先级
 
             if (listening_mode_ != kListeningModeRealtime) {
                 audio_service_.EnableVoiceProcessing(false);
@@ -796,6 +796,9 @@ void Application::Reboot() {
 
 void Application::WakeWordInvoke(const std::string& wake_word) {
     if (device_state_ == kDeviceStateIdle) {
+        // 播放唤醒音效
+        audio_service_.PlaySound(Lang::Sounds::P3_ZAINE);
+        
         ToggleChatState();
         Schedule([this, wake_word]() {
             if (protocol_) {
