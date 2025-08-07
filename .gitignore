@@ -1,5 +1,5 @@
 tmp/
-
+.idea/
 managed_components/
 build/
 .vscode/
